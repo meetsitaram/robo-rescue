@@ -1,4 +1,4 @@
-"""FruitPunch game logic: throw, track, predict, dodge, score."""
+"""Rescue game logic: throw, track, predict, dodge, score."""
 
 import copy
 import csv
@@ -133,6 +133,36 @@ def dodge_candidates(q, threat_dir_xy, contact_z=None, turn_walk_first=False, ba
     return c
 
 
+# RESCUE objective: run down a straight escape route to the exit while defenses fire.
+ROUTE_LENGTH = 40.0   # m from the start to the exit
+RUN_MODE, RUN_VEL, SPRINT_VEL = 3, 2.0, 2.5  # planner RUN mode accepts 1.5-3.0 m/s
+MAX_BODY_HITS = 3     # a robot hit this many times is too damaged to make it out
+
+
+def unit(yaw):
+    return np.array([np.cos(yaw), np.sin(yaw)])
+
+
+def rescue_candidates(route_yaw):
+    """Reactions while running: change speed or line, crouch, or stop; tried in this order."""
+    run = lambda yaw, vel=RUN_VEL, mode=RUN_MODE: PlannerCommand(
+        mode=mode, target_vel=vel, move_dir=tuple(unit(yaw)), facing_yaw=yaw)
+    c = [Candidate("sprint", run(route_yaw, SPRINT_VEL)),
+         Candidate("slow down", run(route_yaw, 1.5))]
+    for deg in (35, 70):
+        for s, label in ((1, "left"), (-1, "right")):
+            c.append(Candidate(f"swerve {label} {deg}", run(route_yaw + s * np.radians(deg))))
+    c += [Candidate("crouch-run", PlannerCommand(mode=g1.MODES["crouch_walk"], move_dir=tuple(unit(route_yaw)),
+                                                 facing_yaw=route_yaw)),
+          Candidate("stop", PlannerCommand(mode=0, facing_yaw=route_yaw)),
+          Candidate("duck (squat 0.3)", PlannerCommand(mode=4, height=0.3, facing_yaw=route_yaw))]
+    for cand in c:
+        # Quick reactions (shortest horizon) but no faster playback: on SONIC, a 1.3x sprint
+        # or swerve at running speed made the robot fall in every run.
+        cand.cmd = replace(cand.cmd, horizon_tokens=REACT_TOKENS)
+    return c
+
+
 def fast(cmd: PlannerCommand) -> PlannerCommand:
     """Reaction timing: shortest planner horizon, faster playback."""
     return replace(cmd, horizon_tokens=REACT_TOKENS, speed=REACT_SPEED)
@@ -174,7 +204,7 @@ class Game:
     interval: float = 3.5
     seed: int = 0
     log_name: str = "throws.csv"
-    objective: str = "dodge"          # "dodge" or "hit" (meet the tomato with a hand)
+    objective: str = "dodge"          # "dodge", "hit" (meet the ball with a hand) or "rescue" (run the escape route)
     balls: tuple = tuple(BALLS)
     rng: np.random.Generator = field(init=False)
     state: str = field(default="idle", init=False)
@@ -202,6 +232,12 @@ class Game:
         self.horizon = 2.5
         if self.objective == "hit":
             self.runner.cmd = PlannerCommand(mode=g1.MODES["idle_boxing"], facing_yaw=self.home_yaw)
+        self.rescued = self.lost = False
+        self.body_hits = 0
+        self.t_start = self.runner.time
+        self.exit_xy = self.home_xy + ROUTE_LENGTH * unit(self.home_yaw)
+        self._last_steer = -1.0
+        self.run_from = self.runner.time + 1.5  # stand for 1.5 s first: SONIC can fall going straight from a reset into a run
         LOG_DIR.mkdir(exist_ok=True)
         self.log_path = LOG_DIR / self.log_name
 
@@ -210,7 +246,10 @@ class Game:
         r = self.runner
         style = str(self.rng.choice(self.balls))
         ball = BALLS[style]
-        p0, v0, self.g = random_throw(r.robot_qpos(), self.rng, style)
+        if self.objective == "rescue":
+            p0, v0, self.g = self._rescue_throw(style)
+        else:
+            p0, v0, self.g = random_throw(r.robot_qpos(), self.rng, style)
         r.arena.set_projectile(ball["radius"], ball["mass"], ball["rgba"], ball["sticky"])
         r.arena.launch(p0, v0)
         r.arena.set_tomato_gravity(float(ball["gscale"]))
@@ -226,6 +265,19 @@ class Game:
         """Call once per control tick (after runner.tick())."""
         r = self.runner
         a = r.arena
+        if self.objective == "rescue":
+            if self.rescued or self.lost:
+                return
+            q = r.robot_qpos()
+            if np.dot(q[:2] - self.home_xy, unit(self.home_yaw)) >= ROUTE_LENGTH:
+                self.rescued = True
+                r.cmd = PlannerCommand(mode=0, facing_yaw=self.home_yaw)
+                print(f"RESCUED in {r.time - self.t_start:.1f}s with {self.body_hits} body hits")
+                return
+            if r.time < self.run_from:
+                return
+            if self.state == "idle" and r.time - self._last_steer > 0.5:
+                r.cmd, self._last_steer = self._run_cmd(), r.time  # steer back toward the exit
         if self.state == "idle":
             if self.auto and r.time >= self.next_throw:
                 self.throw()
@@ -274,7 +326,8 @@ class Game:
             self.state = "reacting"
             # A moving robot keeps going past the ~1 s reference horizon, so "no hit" is not
             # trustworthy for it: stop or dodge anyway.
-            threat |= r.cmd.target_xy is not None or np.linalg.norm(r.cmd.move_dir) > 1e-6
+            if self.objective != "rescue":
+                threat |= r.cmd.target_xy is not None or np.linalg.norm(r.cmd.move_dir) > 1e-6
             if not threat:
                 rec.action = "stay"
         if self.objective == "hit":
@@ -298,6 +351,14 @@ class Game:
             traj[:, :2] += r.drift()
             lag = np.repeat(r.robot_qpos()[None], int(SONIC_LAG / g1.CONTROL_DT), axis=0)
             traj = np.concatenate([lag, traj])
+        if self.objective == "rescue" and len(traj) >= 6:
+            # Keep running at the plan's final velocity until the ball can no longer arrive.
+            vel = (traj[-1, :2] - traj[-6, :2]) / (5 * g1.CONTROL_DT)
+            n = int((self.horizon + 0.5) / g1.CONTROL_DT) - len(traj)
+            if n > 0:
+                ext = np.repeat(traj[-1:], n, axis=0)
+                ext[:, :2] += vel * (np.arange(1, n + 1) * g1.CONTROL_DT)[:, None]
+                traj = np.concatenate([traj, ext])
         return traj
 
     def _try(self, cand, p, v, q):
@@ -316,6 +377,14 @@ class Game:
         """Try reactions (stop, upper-body moves, ducks, escapes); commit the first whose
         blended plan clears. If none clears, try swatting the tomato with a hand."""
         r = self.runner
+        if self.objective == "rescue":
+            route_yaw = float(np.arctan2(*(self.exit_xy - q[:2])[::-1]))
+            for cand in rescue_candidates(route_yaw):
+                hit, trial = self._try(cand, p, v, q)
+                if hit is None or hit.body == "floor":
+                    r.commit(cand.cmd, trial)
+                    return cand.name, True
+            return "keep running", False
         d = v[:2] / (np.linalg.norm(v[:2]) + 1e-9)
         stop = Candidate("stop", fast(PlannerCommand(mode=0, facing_yaw=root_yaw(q))))
         z = None if self.contact is None else float(self.contact[2])
@@ -455,12 +524,47 @@ class Game:
               f" ({rec.actual_body})")
         self._log(rec)
         # Walk back to the home spot, facing the throwing side.
-        mode = g1.MODES["walk_boxing"] if self.objective == "hit" else 1
-        self.runner.cmd = PlannerCommand(mode=mode, target_xy=tuple(self.home_xy), target_yaw=self.home_yaw)
+        if self.objective == "rescue":
+            if rec.outcome in ("splat", "struck"):
+                self.body_hits += 1
+            if self.body_hits >= MAX_BODY_HITS or self.runner.fallen():
+                self.lost = True
+                print(f"LOST after {self.runner.time - self.t_start:.1f}s ({self.body_hits} body hits)")
+            else:
+                self.runner.cmd, self._last_steer = self._run_cmd(), self.runner.time
+        else:
+            mode = g1.MODES["walk_boxing"] if self.objective == "hit" else 1
+            self.runner.cmd = PlannerCommand(mode=mode, target_xy=tuple(self.home_xy), target_yaw=self.home_yaw)
         if not a.stuck:
             a.park_tomato()
         self.state = "idle"
         self.next_throw = self.runner.time + self.interval
+
+    def _run_cmd(self):
+        """Run toward the exit from wherever the robot is."""
+        to_exit = self.exit_xy - self.runner.robot_qpos()[:2]
+        yaw = float(np.arctan2(to_exit[1], to_exit[0]))
+        return PlannerCommand(mode=RUN_MODE, target_vel=RUN_VEL, move_dir=tuple(unit(yaw)), facing_yaw=yaw)
+
+    def _rescue_throw(self, style):
+        """A defense beside or ahead of the route leads its shot at where the robot will be."""
+        st = BALLS[style]
+        g = GRAVITY * st["gscale"]
+        r = self.runner
+        flight = self.rng.uniform(*st["flight"])
+        # Where the robot will be at impact: its reference track, extrapolated at run speed.
+        k = r.track.cur + int(flight / g1.CONTROL_DT)
+        future = r.track.at(min(k, len(r.track.frames) - 1)).copy()
+        if k >= len(r.track.frames):
+            future[:2] += RUN_VEL * unit(self.home_yaw) * (k - len(r.track.frames) + 1) * g1.CONTROL_DT
+        if not r.kinematic:
+            future[:2] += r.drift()
+        aim = future[:3] + np.array([0.0, 0.0, self.rng.uniform(-0.05, 0.35)])
+        aim[2] = 0.79 + aim[2] - future[2]  # pelvis-to-chest height of a standing robot
+        az = self.home_yaw + np.radians(self.rng.uniform(-75, 75))  # from ahead of or beside the route
+        d = self.rng.uniform(*st["dist"])
+        p0 = np.array([aim[0] + d * np.cos(az), aim[1] + d * np.sin(az), self.rng.uniform(*st["release"])])
+        return p0, launch_velocity(p0, aim, flight, g=g), g
 
     def _log(self, rec):
         new = not self.log_path.exists()

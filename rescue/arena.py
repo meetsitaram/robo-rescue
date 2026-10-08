@@ -161,7 +161,7 @@ class Arena:
         mujoco.mj_forward(self.m, self.d)
 
     def set_projectile(self, radius, mass, rgba, sticky):
-        """Reshape the single projectile body into a ball from fruitpunch.balls."""
+        """Reshape the single projectile body into a ball from rescue.balls."""
         m = self.m
         m.geom_size[self.tomato_geom, 0] = radius
         m.geom_rbound[self.tomato_geom] = radius

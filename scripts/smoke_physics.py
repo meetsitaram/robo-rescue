@@ -7,9 +7,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from fruitpunch import g1
-from fruitpunch.planner import PlannerCommand, root_yaw
-from fruitpunch.runner import Runner
+from rescue import g1
+from rescue.planner import PlannerCommand, root_yaw
+from rescue.runner import Runner
 
 robot = sys.argv[1] if len(sys.argv) > 1 else "physics"
 r = Runner(robot)

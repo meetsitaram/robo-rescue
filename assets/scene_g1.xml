@@ -1,5 +1,5 @@
-<mujoco model="fruitpunch_g1">
-  <!-- FruitPunch arena: G1 29-DoF + a throwable tomato.
+<mujoco model="rescue_g1">
+  <!-- Rescue arena: G1 29-DoF + a throwable tomato.
        The tomato sticks (via the tomato_stick weld, activated at runtime) when it
        touches the torso/head, and bounces off everything else. -->
   <include file="g1/g1_29dof.xml"/>

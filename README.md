@@ -1,7 +1,12 @@
-# FruitPunch
+# Rescue
 
-Robots dodge balls and fruit thrown at them, or hit them back. Phase 1 is a MuJoCo pipeline for
-the Unitree G1:
+Hundreds of end-of-service humanoid robots are being decommissioned in a molten pit. Their only way
+out is to climb out and run for the exit while the facility's defenses throw everything they have at
+them. The player is a rescuer who unlocks the facility's main gates so the robots can escape, then
+gets as many of them out as possible by improving their models, so they see what is coming and dodge
+or deflect it. (Formerly FruitPunch.)
+
+Phase 1, below, is the robot's survival pipeline in MuJoCo for the Unitree G1:
 
 1. Track the ball in flight.
 2. Predict where and when it will hit.
@@ -31,7 +36,7 @@ in a browser. Every problem hit along the way, with its fix, is in
 ## kplanner target-reach mode
 
 The shipped `planner_sonic.onnx` can steer to a goal pose, not just follow velocity commands. NVIDIA's
-deploy code never uses this: it always sends `has_specific_target = 0`. FruitPunch drives the planner
+deploy code never uses this: it always sends `has_specific_target = 0`. Rescue drives the planner
 with a world-frame target position and heading. The planner generates whole-body walking or turning
 toward the target, replanning every 0.4 s. The translucent ghost is the commanded pose.
 
@@ -114,16 +119,16 @@ py -3.12 -m pip install -r requirements.txt
 
 The SONIC ONNX models (`planner_sonic.onnx`, `model_encoder.onnx`, `model_decoder.onnx`) come from
 the Hugging Face repo [`nvidia/GEAR-SONIC`](https://huggingface.co/nvidia/GEAR-SONIC). By default
-they are read from `../gear-sonic-g1/`; override this with `FRUITPUNCH_SONIC_DIR`.
+they are read from `../gear-sonic-g1/`; override this with `RESCUE_SONIC_DIR`.
 
 ## Run
 
 ```powershell
-.\run.ps1 -m fruitpunch.app --mode drive                                # keyboard driving
-.\run.ps1 -m fruitpunch.app --robot physics --mode target               # ghost target pose
-.\run.ps1 -m fruitpunch.app --mode game                                 # throws + dodging
-.\run.ps1 -m fruitpunch.app --mode game --objective hit --bat both      # hit them back
-.\run.ps1 -m fruitpunch.app --mode game --balls tennis,dodgeball        # pick the balls
+.\run.ps1 -m rescue.app --mode drive                                # keyboard driving
+.\run.ps1 -m rescue.app --robot physics --mode target               # ghost target pose
+.\run.ps1 -m rescue.app --mode game                                 # throws + dodging
+.\run.ps1 -m rescue.app --mode game --objective hit --bat both      # hit them back
+.\run.ps1 -m rescue.app --mode game --balls tennis,dodgeball        # pick the balls
 .\run.ps1 scripts\headless_game.py --robot physics --objective dodge --throws 28
 .\run.ps1 scripts\render_highlights.py                                  # regenerate docs/media
 ```
@@ -145,17 +150,17 @@ they are read from `../gear-sonic-g1/`; override this with `FRUITPUNCH_SONIC_DIR
 
 | File | What |
 | --- | --- |
-| `fruitpunch/g1.py` | G1 constants: joint maps, default pose, gains, planner modes |
-| `fruitpunch/planner.py` | `planner_sonic.onnx` wrapper, 30→50 Hz resampling, plan blending, replan policy, joint layers |
-| `fruitpunch/sonic.py` | SONIC encoder/decoder observation assembly (1762 / 994 dims) |
-| `fruitpunch/arena.py` | MuJoCo scene, kinematic vs physics robot, projectile shapes, sticky weld, foam bats |
-| `fruitpunch/runner.py` | 50 Hz tick, physics-mode target following |
-| `fruitpunch/projectile.py` | Launch solver, Euler-exact ballistic path, contact prediction |
-| `fruitpunch/balls.py` | Ball catalog |
-| `fruitpunch/game.py` | Thrower, trajectory tracker, DODGE and HIT selection, scoring, CSV log |
-| `fruitpunch/reach.py` | Arm IK for aimed punches and swats |
-| `fruitpunch/overlay.py` | Ghost robot, predicted arc, contact marker |
-| `fruitpunch/app.py` | Interactive viewer |
+| `rescue/g1.py` | G1 constants: joint maps, default pose, gains, planner modes |
+| `rescue/planner.py` | `planner_sonic.onnx` wrapper, 30→50 Hz resampling, plan blending, replan policy, joint layers |
+| `rescue/sonic.py` | SONIC encoder/decoder observation assembly (1762 / 994 dims) |
+| `rescue/arena.py` | MuJoCo scene, kinematic vs physics robot, projectile shapes, sticky weld, foam bats |
+| `rescue/runner.py` | 50 Hz tick, physics-mode target following |
+| `rescue/projectile.py` | Launch solver, Euler-exact ballistic path, contact prediction |
+| `rescue/balls.py` | Ball catalog |
+| `rescue/game.py` | Thrower, trajectory tracker, DODGE and HIT selection, scoring, CSV log |
+| `rescue/reach.py` | Arm IK for aimed punches and swats |
+| `rescue/overlay.py` | Ghost robot, predicted arc, contact marker |
+| `rescue/app.py` | Interactive viewer |
 | `scripts/` | Smoke tests, headless games, clip and highlight renderers |
 | `docs/` | Highlights, review page, issues log |
 

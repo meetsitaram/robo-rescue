@@ -13,11 +13,11 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from fruitpunch.arena import ROBOT_XML
-from fruitpunch.game import Game
-from fruitpunch.overlay import Overlay
-from fruitpunch.planner import PlannerCommand, root_yaw, standing_qpos
-from fruitpunch.runner import Runner
+from rescue.arena import ROBOT_XML
+from rescue.game import Game
+from rescue.overlay import Overlay
+from rescue.planner import PlannerCommand, root_yaw, standing_qpos
+from rescue.runner import Runner
 
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent / "docs" / "clips"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -122,7 +122,7 @@ def clip_target(robot):
 
 
 def clip_game(robot, throws, seed, swat_only=False, objective="dodge", bat=None, balls=None):
-    import fruitpunch.game as game_mod
+    import rescue.game as game_mod
     saved = game_mod.dodge_candidates
     if swat_only:
         game_mod.dodge_candidates = lambda *a, **k: []

@@ -8,11 +8,11 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from fruitpunch.arena import ROBOT_XML
-from fruitpunch.game import Game
-from fruitpunch.overlay import Overlay
-from fruitpunch.planner import PlannerCommand, standing_qpos
-from fruitpunch.runner import Runner
+from rescue.arena import ROBOT_XML
+from rescue.game import Game
+from rescue.overlay import Overlay
+from rescue.planner import PlannerCommand, standing_qpos
+from rescue.runner import Runner
 
 robot = sys.argv[1] if len(sys.argv) > 1 else "kinematic"
 OUT = Path(__file__).resolve().parent.parent / "docs" / "img"

@@ -7,11 +7,11 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from fruitpunch import g1
-from fruitpunch.arena import Arena
-from fruitpunch.config import PLANNER_ONNX
-from fruitpunch.planner import KPlanner, MotionTrack, PlannerCommand, ReplanPolicy, standing_qpos, root_yaw
-from fruitpunch.projectile import ContactPredictor, launch_velocity
+from rescue import g1
+from rescue.arena import Arena
+from rescue.config import PLANNER_ONNX
+from rescue.planner import KPlanner, MotionTrack, PlannerCommand, ReplanPolicy, standing_qpos, root_yaw
+from rescue.projectile import ContactPredictor, launch_velocity
 
 N_SUB = int(round(g1.CONTROL_DT / g1.SIM_DT))
 

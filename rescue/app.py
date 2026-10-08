@@ -1,6 +1,6 @@
-"""FruitPunch interactive MuJoCo viewer.
+"""Rescue interactive MuJoCo viewer.
 
-    python -m fruitpunch.app [--robot kinematic|physics] [--mode drive|target|game]
+    python -m rescue.app [--robot kinematic|physics] [--mode drive|target|game]
                              [--objective dodge|hit] [--bat left|right|both] [--balls tennis,tomato,...]
 
 Keys (arrows / nav block, so they don't clash with MuJoCo viewer shortcuts):
@@ -212,7 +212,7 @@ def main():
     ap.add_argument("--interval", type=float, default=4.0, help="seconds between throws in GAME mode")
     ap.add_argument("--objective", default="dodge", choices=["dodge", "hit"])
     ap.add_argument("--bat", default=None, choices=["left", "right", "both"], help="foam bat in hand(s)")
-    ap.add_argument("--balls", default=None, help="comma-separated subset of fruitpunch.balls.BALLS")
+    ap.add_argument("--balls", default=None, help="comma-separated subset of rescue.balls.BALLS")
     args = ap.parse_args()
     print(__doc__)
     App(args.robot, args.mode, args.interval, args.objective, args.bat,

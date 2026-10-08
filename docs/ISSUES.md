@@ -1,4 +1,4 @@
-# Issues log (phase 1)
+# Issues log (phase 1, as FruitPunch)
 
 Every problem hit while building phase 1, with its cause and fix, newest first.
 
