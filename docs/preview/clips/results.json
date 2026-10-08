@@ -1,0 +1,478 @@
+{
+ "target_kinematic": [
+  {
+   "target": "Go to (2.0, 1.0), face +90 deg",
+   "pos_err_cm": 2.2,
+   "yaw_err_deg": 3.0
+  },
+  {
+   "target": "In-place: shift 0.4 m, turn to 180 deg",
+   "pos_err_cm": 0.4,
+   "yaw_err_deg": 2.0
+  },
+  {
+   "target": "Go to (0, 0), face 0 deg, then squat",
+   "pos_err_cm": 7.9,
+   "yaw_err_deg": 0.8
+  }
+ ],
+ "target_physics": [
+  {
+   "target": "Go to (2.0, 1.0), face +90 deg",
+   "pos_err_cm": 10.7,
+   "yaw_err_deg": 4.2
+  },
+  {
+   "target": "In-place: shift 0.4 m, turn to 180 deg",
+   "pos_err_cm": 4.5,
+   "yaw_err_deg": 0.2
+  },
+  {
+   "target": "Go to (0, 0), face 0 deg, then squat",
+   "pos_err_cm": 16.0,
+   "yaw_err_deg": 3.3
+  }
+ ],
+ "dodge_kinematic": [
+  [
+   {
+    "n": 1,
+    "ball": "basketball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.13,
+    "action": "duck (squat 0.3)",
+    "replans": 0,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 2,
+    "ball": "basketball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.02,
+    "action": "duck (squat 0.3)",
+    "replans": 0,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 3,
+    "ball": "basketball",
+    "first_prediction": "left_shoulder_pitch_link",
+    "pred_t": 1.1,
+    "action": "twist torso right > duck (squat 0.3)",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 4,
+    "ball": "tomato",
+    "first_prediction": "right_elbow_link",
+    "pred_t": 1.64,
+    "action": "sidestep right 0.5m > sidestep right 0.5m",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 5,
+    "ball": "cannonball",
+    "first_prediction": "right_wrist_pitch_link",
+    "pred_t": 2.82,
+    "action": "sidestep right 0.5m > sidestep left 0.8m",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 6,
+    "ball": "volleyball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.28,
+    "action": "lean forward > lean forward",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 7,
+    "ball": "volleyball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.03,
+    "action": "twist torso right > duck (squat 0.3)",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 8,
+    "ball": "tennis",
+    "first_prediction": "torso_link",
+    "pred_t": 0.4,
+    "action": "swat left hand",
+    "replans": 0,
+    "hit": "left_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 9,
+    "ball": "dodgeball",
+    "first_prediction": "torso_link",
+    "pred_t": 0.66,
+    "action": "turn + walk left 0.6m",
+    "replans": 0,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 10,
+    "ball": "tennis",
+    "first_prediction": "torso_link",
+    "pred_t": 0.64,
+    "action": "turn + walk left 0.9m > turn + walk left 0.9m",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   }
+  ],
+  {
+   "dodged": 9,
+   "swatted": 1
+  },
+  11
+ ],
+ "dodge_physics": [
+  [
+   {
+    "n": 1,
+    "ball": "basketball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.13,
+    "action": "duck (squat 0.3)",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 2,
+    "ball": "basketball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.29,
+    "action": "duck (squat 0.3) > turn + walk left 0.6m",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 3,
+    "ball": "dodgeball",
+    "first_prediction": "torso_link",
+    "pred_t": 0.64,
+    "action": "crouch-walk right 0.8m",
+    "replans": 0,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 4,
+    "ball": "tennis",
+    "first_prediction": "torso_link",
+    "pred_t": 0.44,
+    "action": "swat right hand",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 5,
+    "ball": "volleyball",
+    "first_prediction": "torso_link",
+    "pred_t": 1.23,
+    "action": "lean forward > duck (squat 0.3)",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 6,
+    "ball": "tomato_lob",
+    "first_prediction": "left_shoulder_roll_link",
+    "pred_t": 1.34,
+    "action": "twist torso right > duck (squat 0.3)",
+    "replans": 1,
+    "hit": "torso_link",
+    "outcome": "splat"
+   },
+   {
+    "n": 7,
+    "ball": "cannonball",
+    "first_prediction": "right_hip_yaw_link",
+    "pred_t": 2.82,
+    "action": "turn + walk left 0.6m > turn + walk left 0.9m",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "dodged"
+   },
+   {
+    "n": 8,
+    "ball": "tennis",
+    "first_prediction": "torso_link",
+    "pred_t": 0.44,
+    "action": "swat left hand",
+    "replans": 0,
+    "hit": "right_elbow_link",
+    "outcome": "bounced"
+   },
+   {
+    "n": 9,
+    "ball": "tomato",
+    "first_prediction": "torso_link",
+    "pred_t": 1.88,
+    "action": "duck (squat 0.3)",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "splat"
+   },
+   {
+    "n": 10,
+    "ball": "dodgeball",
+    "first_prediction": "torso_link",
+    "pred_t": 0.58,
+    "action": "swat left hand",
+    "replans": 0,
+    "hit": "left_wrist_yaw_link",
+    "outcome": "swatted"
+   }
+  ],
+  {
+   "struck": 2,
+   "dodged": 4,
+   "splat": 2,
+   "bounced": 1,
+   "swatted": 1
+  },
+  2
+ ],
+ "hit_kinematic_bat": [
+  [
+   {
+    "n": 1,
+    "ball": "tomato",
+    "first_prediction": "torso_link",
+    "pred_t": 1.51,
+    "action": "left punch (aimed) > swat left hand",
+    "replans": 1,
+    "hit": "left_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 2,
+    "ball": "dodgeball",
+    "first_prediction": "left_wrist_yaw_link",
+    "pred_t": 0.64,
+    "action": "none > swat right hand",
+    "replans": 1,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 3,
+    "ball": "basketball",
+    "first_prediction": "right_wrist_yaw_link",
+    "pred_t": 1.06,
+    "action": "none",
+    "replans": 0,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 4,
+    "ball": "volleyball",
+    "first_prediction": "left_wrist_yaw_link",
+    "pred_t": 1.23,
+    "action": "none",
+    "replans": 0,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 5,
+    "ball": "volleyball",
+    "first_prediction": "right_wrist_pitch_link",
+    "pred_t": 1.02,
+    "action": "none",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 6,
+    "ball": "tennis",
+    "first_prediction": "torso_link",
+    "pred_t": 0.43,
+    "action": "swat right hand",
+    "replans": 0,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 7,
+    "ball": "tennis",
+    "first_prediction": "left_wrist_roll_link",
+    "pred_t": 0.38,
+    "action": "none",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 8,
+    "ball": "tomato_lob",
+    "first_prediction": "left_wrist_yaw_link",
+    "pred_t": 1.26,
+    "action": "none > swat right hand",
+    "replans": 1,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 9,
+    "ball": "tomato",
+    "first_prediction": "left_wrist_yaw_link",
+    "pred_t": 1.64,
+    "action": "none > left punch (aimed)",
+    "replans": 1,
+    "hit": "left_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 10,
+    "ball": "tomato_lob",
+    "first_prediction": "right_wrist_yaw_link",
+    "pred_t": 1.36,
+    "action": "none",
+    "replans": 0,
+    "hit": "left_wrist_yaw_link",
+    "outcome": "swatted"
+   }
+  ],
+  {
+   "swatted": 8,
+   "struck": 2
+  },
+  14
+ ],
+ "hit_physics_bat": [
+  [
+   {
+    "n": 1,
+    "ball": "tomato",
+    "first_prediction": "torso_link",
+    "pred_t": 1.51,
+    "action": "left punch (aimed) > swat left hand",
+    "replans": 1,
+    "hit": "torso_link",
+    "outcome": "splat"
+   },
+   {
+    "n": 2,
+    "ball": "dodgeball",
+    "first_prediction": "torso_link",
+    "pred_t": 0.52,
+    "action": "swat right hand",
+    "replans": 0,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 3,
+    "ball": "basketball",
+    "first_prediction": "pelvis",
+    "pred_t": 1.26,
+    "action": "left punch > right punch (aimed)",
+    "replans": 1,
+    "hit": "right_wrist_yaw_link",
+    "outcome": "swatted"
+   },
+   {
+    "n": 4,
+    "ball": "cannonball",
+    "first_prediction": "left_elbow_link",
+    "pred_t": 2.56,
+    "action": "right punch > left punch > swat right hand",
+    "replans": 2,
+    "hit": "right_hip_roll_link",
+    "outcome": "bounced"
+   },
+   {
+    "n": 5,
+    "ball": "tomato_lob",
+    "first_prediction": "floor",
+    "pred_t": 1.56,
+    "action": "right punch > left punch (aimed)",
+    "replans": 1,
+    "hit": "world",
+    "outcome": "miss"
+   },
+   {
+    "n": 6,
+    "ball": "basketball",
+    "first_prediction": "right_wrist_pitch_link",
+    "pred_t": 0.89,
+    "action": "none > left punch",
+    "replans": 1,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 7,
+    "ball": "basketball",
+    "first_prediction": "floor",
+    "pred_t": 1.35,
+    "action": "left punch (aimed) > left hook > swat right hand",
+    "replans": 2,
+    "hit": "pelvis",
+    "outcome": "struck"
+   },
+   {
+    "n": 8,
+    "ball": "tomato_lob",
+    "first_prediction": "floor",
+    "pred_t": 1.5,
+    "action": "left hook > left hook > left punch",
+    "replans": 2,
+    "hit": "world",
+    "outcome": "miss"
+   },
+   {
+    "n": 9,
+    "ball": "cannonball",
+    "first_prediction": "floor",
+    "pred_t": 2.6,
+    "action": "right punch (aimed) > left punch > left punch (aimed)",
+    "replans": 2,
+    "hit": "torso_link",
+    "outcome": "struck"
+   },
+   {
+    "n": 10,
+    "ball": "volleyball",
+    "first_prediction": "floor",
+    "pred_t": 1.16,
+    "action": "right punch (aimed) > guard",
+    "replans": 1,
+    "hit": "pelvis",
+    "outcome": "struck"
+   }
+  ],
+  {
+   "splat": 1,
+   "struck": 5,
+   "swatted": 1,
+   "bounced": 1,
+   "miss": 2
+  },
+  -4
+ ]
+}

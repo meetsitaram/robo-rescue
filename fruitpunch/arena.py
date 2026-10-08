@@ -22,7 +22,11 @@ STICKY_BODIES = ("torso_link", "pelvis")  # torso + head (head mesh lives on tor
 ROBOT_NQ, ROBOT_NV = 36, 35
 
 
-def build_model(kinematic: bool) -> mujoco.MjModel:
+BAT_LENGTH, BAT_RADIUS = 0.6, 0.035  # foam dodgeball bat, continuing the forearm
+BAT_START = 0.10                      # m from the wrist_yaw_link origin (inside the fist)
+
+
+def build_model(kinematic: bool, bat: str | None = None) -> mujoco.MjModel:
     spec = mujoco.MjSpec.from_file(str(SCENE_XML))
     # The included robot file's <compiler meshdir> is ignored under <include>; resolve meshes explicitly.
     for mesh in spec.meshes:
@@ -37,7 +41,14 @@ def build_model(kinematic: bool) -> mujoco.MjModel:
         hand.add_geom(name=f"{side}_hand_collision", type=mujoco.mjtGeom.mjGEOM_SPHERE,
                       size=[0.045, 0, 0], pos=[0.08, 0, 0], rgba=[0.8, 0.8, 0.8, 0], group=3,
                       mass=0)
+    for side in {"right": ["right"], "left": ["left"], "both": ["left", "right"]}.get(bat or "", []):
+        spec.body(f"{side}_wrist_yaw_link").add_geom(
+            name=f"{side}_bat", type=mujoco.mjtGeom.mjGEOM_CAPSULE, size=[BAT_RADIUS, 0, 0],
+            fromto=[BAT_START, 0, 0, BAT_START + BAT_LENGTH, 0, 0], rgba=[1.0, 0.55, 0.1, 1], mass=0.15)
     spec.geom("floor").friction = [1.0, 0.005, 0.0001]
+    # Non-zero at compile time so MuJoCo keeps gravity compensation active for the tomato;
+    # set per throw with Arena.set_tomato_gravity().
+    spec.body("tomato").gravcomp = 1e-6
     if kinematic:
         # Robot collides only with the tomato: floor (1), robot (2), tomato (3).
         robot_bodies = _robot_body_names(spec)
@@ -68,9 +79,10 @@ def _robot_body_names(spec):
 
 
 class Arena:
-    def __init__(self, kinematic: bool = True):
+    def __init__(self, kinematic: bool = True, bat: str | None = None):
         self.kinematic = kinematic
-        self.m = build_model(kinematic)
+        self.bat = bat
+        self.m = build_model(kinematic, bat)
         self.m.opt.timestep = g1.SIM_DT
         self.d = mujoco.MjData(self.m)
         m = self.m
@@ -83,6 +95,7 @@ class Arena:
         self.sticky_bodies = {m.body(n).id for n in STICKY_BODIES}
         self.torso_id = m.body("torso_link").id
         self.stuck = False
+        self.sticky = True
         self.first_hit = None  # (time, body name, world point)
         self.park_tomato()
 
@@ -137,6 +150,28 @@ class Arena:
         self.d.qvel[self.tv + 3:self.tv + 6] = np.random.uniform(-5, 5, 3)  # a bit of spin
         mujoco.mj_forward(self.m, self.d)
 
+    def set_projectile(self, radius, mass, rgba, sticky):
+        """Reshape the single projectile body into a ball from fruitpunch.balls."""
+        m = self.m
+        m.geom_size[self.tomato_geom, 0] = radius
+        m.geom_rbound[self.tomato_geom] = radius
+        m.geom_rgba[self.tomato_geom] = rgba
+        stem = m.geom("tomato_stem").id
+        m.geom_rgba[stem, 3] = 1.0 if sticky else 0.0  # the stem only on fruit
+        m.geom_pos[stem, 2] = radius + 0.001
+        m.body_mass[self.tomato_id] = mass
+        # Floor on rotational inertia: a 58 g tennis ball has ~2.5e-5 kg m^2, which made the
+        # ball's rotation numerically singular in contact (NaN QACC, then a MuJoCo auto-reset).
+        m.body_inertia[self.tomato_id] = max(0.4 * mass * radius**2, 2e-4)
+        # Recompute derived constants (dof_invweight0 etc. scale constraint softness); stale
+        # values from the compiled 0.12 kg tomato made contacts with a 5 kg ball blow up.
+        mujoco.mj_setConst(m, mujoco.MjData(m))
+        self.sticky = sticky
+
+    def set_tomato_gravity(self, scale: float):
+        """Effective gravity on the tomato as a fraction of g (1 = real, <1 = floaty)."""
+        self.m.body_gravcomp[self.tomato_id] = max(1e-6, 1.0 - scale)
+
     def tomato_state(self):
         return self.d.qpos[self.tq:self.tq + 3].copy(), self.d.qvel[self.tv:self.tv + 3].copy()
 
@@ -154,7 +189,7 @@ class Arena:
             body = m.geom_bodyid[other]
             if self.first_hit is None:
                 self.first_hit = (d.time, m.body(body).name, c.pos.copy())
-            if body in self.sticky_bodies:
+            if self.sticky and body in self.sticky_bodies:
                 self._stick(body)
                 return
 

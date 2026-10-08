@@ -15,7 +15,7 @@ import numpy as np
 import onnxruntime as ort
 
 from . import g1
-from .rot import slerp, quat_yaw, yaw_of
+from .rot import qmul, slerp, quat_yaw, yaw_of
 
 DEFAULT_ALLOWED_TOKENS = np.array([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]], np.int64)
 BLEND_FRAMES = 8
@@ -149,6 +149,35 @@ class MotionTrack:
             o[3:7] = slerp(old[3:7], new[k, 3:7], w)
             out[f] = o
         self.frames, self.cur = out, 0
+
+
+def apply_overlay(track: "MotionTrack", offsets: dict, ramp_in=0.15, hold=1.0, ramp_out=0.3, start=0.0):
+    """Add joint offsets {mujoco joint index: rad} to the track from its current frame on:
+    ramp in, hold, ramp out (seconds, 50 Hz). Pads the track if it is too short. Used for
+    fast upper-body moves the planner has no mode for (torso twist, forward lean, swats).
+    The key "root_pitch" pitches the whole body forward about the pelvis (body frame).
+    `start` delays the ramp (seconds from now)."""
+    n_in, n_hold, n_out = (max(1, int(round(x * 50))) for x in (ramp_in, hold, ramp_out))
+    f0 = track.cur + int(round(start * 50))
+    need = f0 + n_in + n_hold + n_out + 1
+    if len(track.frames) < need:
+        pad = np.repeat(track.frames[-1:], need - len(track.frames), axis=0)
+        track.frames = np.concatenate([track.frames, pad])
+    for k in range(n_in + n_hold + n_out):
+        if k < n_in:
+            w = (k + 1) / n_in
+        elif k < n_in + n_hold:
+            w = 1.0
+        else:
+            w = 1.0 - (k - n_in - n_hold + 1) / n_out
+        w = 0.5 - 0.5 * np.cos(np.pi * w)  # smooth step
+        fr = track.frames[f0 + k]
+        for j, off in offsets.items():
+            if j == "root_pitch":
+                a = w * off / 2
+                fr[3:7] = qmul(fr[3:7], np.array([np.cos(a), 0.0, np.sin(a), 0.0]))
+            else:
+                fr[7 + j] += w * off
 
 
 def standing_qpos(xy=(0.0, 0.0), yaw=0.0, z=g1.PLANNER_CONTEXT_Z) -> np.ndarray:

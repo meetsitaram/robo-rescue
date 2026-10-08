@@ -15,9 +15,9 @@ N_SUB = int(round(g1.CONTROL_DT / g1.SIM_DT))
 
 
 class Runner:
-    def __init__(self, robot="kinematic", xy=(0.0, 0.0), yaw=0.0, band_seconds=1.0):
+    def __init__(self, robot="kinematic", xy=(0.0, 0.0), yaw=0.0, band_seconds=1.0, bat=None):
         self.kinematic = robot == "kinematic"
-        self.arena = Arena(kinematic=self.kinematic)
+        self.arena = Arena(kinematic=self.kinematic, bat=bat)
         self.planner = KPlanner(PLANNER_ONNX)
         self.replan = ReplanPolicy()
         self.cmd = PlannerCommand(facing_yaw=yaw)
@@ -85,14 +85,18 @@ class Runner:
         mode = 1 if cmd.mode in g1.STATIC_MODES else cmd.mode  # idle can't take real steps
         return replace(cmd, mode=mode, target_xy=tuple(ref_xy + step), target_yaw=yaw)
 
-    def plan_now(self, cmd: PlannerCommand):
+    def plan_now(self, cmd: PlannerCommand, lookahead=2):
         if not self.kinematic and self.anchor_xy:
             # Shift the reference onto the robot's real xy. The SONIC encoder never sees root
             # xy (only joints, joint velocities, relative heading), so this is invisible to
             # the policy but keeps the planner working from where the robot actually is.
             self.track.frames[:, :2] += self.drift()
+        return self.plan_on(self.track, cmd, lookahead)
+
+    def plan_on(self, track: MotionTrack, cmd: PlannerCommand, lookahead=2):
+        """Plan from `track`'s context `lookahead` ticks ahead (used to schedule a move later)."""
         cmd = self._corrected(cmd)
-        ctx, gen = self.track.context()
+        ctx, gen = track.context(lookahead)
         t = time.perf_counter()
         plan = self.planner.plan(ctx, cmd)
         self.last_plan_ms = 1000 * (time.perf_counter() - t)
@@ -135,4 +139,9 @@ class Runner:
         return self.arena.robot_qpos()
 
     def fallen(self):
-        return self.arena.d.qpos[2] < 0.45 and self.cmd.mode not in g1.HEIGHT_MODES | {7, 8, 14}
+        """Torso tipped more than ~60 deg (pelvis height alone misfires during squats/kneels)."""
+        if self.kinematic:
+            return False
+        w, x, y, z = self.arena.d.qpos[3:7]
+        up_z = 1 - 2 * (x * x + y * y)  # z component of the pelvis up axis
+        return up_z < 0.5 or self.arena.d.qpos[2] < 0.25

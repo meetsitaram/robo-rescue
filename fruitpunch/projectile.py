@@ -50,6 +50,9 @@ class ContactPredictor:
             if model.geom_bodyid[g] == tb.id and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_SPHERE:
                 model.geom_size[g, 0] += margin
                 model.geom_rbound[g] += margin
+        self.margin = margin
+        self.tomato_geom = next(g for g in range(model.ngeom) if model.geom_bodyid[g] == tb.id
+                                and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_SPHERE)
         self.d = mujoco.MjData(model)
         self.tomato_qadr = model.jnt_qposadr[tb.jntadr[0]]
         self.tomato_geoms = {g for g in range(model.ngeom) if model.geom_bodyid[g] == tb.id}
@@ -58,6 +61,11 @@ class ContactPredictor:
         self.robot_bodies = {b for b in range(model.nbody) if self._descends(b, root)}
         self.robot_nq = model.jnt_qposadr[tb.jntadr[0]]  # robot qpos comes before the tomato's
 
+    def set_radius(self, radius):
+        """Projectile radius for the next predictions (inflated by the safety margin)."""
+        self.m.geom_size[self.tomato_geom, 0] = radius + self.margin
+        self.m.geom_rbound[self.tomato_geom] = radius + self.margin
+
     def _descends(self, b, root):
         while b > 0:
             if b == root:
@@ -65,7 +73,7 @@ class ContactPredictor:
             b = self.m.body_parentid[b]
         return False
 
-    def predict(self, robot_qpos, p0, v0, horizon=2.5, dt=0.005, robot_traj=None, traj_dt=None):
+    def predict(self, robot_qpos, p0, v0, horizon=2.5, dt=0.005, robot_traj=None, traj_dt=None, g=GRAVITY):
         """First contact of the tomato with the robot or floor.
 
         robot_qpos: current robot qpos (nq_robot,). If robot_traj (N, nq_robot) is
@@ -74,12 +82,16 @@ class ContactPredictor:
         """
         m, d = self.m, self.d
         ts = np.arange(0.0, horizon, dt)
-        path = ballistic(np.asarray(p0, float), np.asarray(v0, float), ts)
+        path = ballistic(np.asarray(p0, float), np.asarray(v0, float), ts, g=g)
         d.qpos[: self.robot_nq] = robot_qpos
         for i, t in enumerate(ts):
             if robot_traj is not None:
                 k = min(int(t / traj_dt), len(robot_traj) - 1)
                 d.qpos[: self.robot_nq] = robot_traj[k]
+            # Far from the robot and above the floor: no contact possible, skip the check.
+            root = d.qpos[:3]
+            if path[i, 2] > 0.3 and np.linalg.norm(path[i] - root) > 1.8:
+                continue
             d.qpos[self.tomato_qadr : self.tomato_qadr + 3] = path[i]
             d.qpos[self.tomato_qadr + 3 : self.tomato_qadr + 7] = (1, 0, 0, 0)
             mujoco.mj_kinematics(m, d)

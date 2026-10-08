@@ -1,15 +1,17 @@
 """FruitPunch interactive MuJoCo viewer.
 
     python -m fruitpunch.app [--robot kinematic|physics] [--mode drive|target|game]
+                             [--objective dodge|hit] [--bat left|right|both] [--balls tennis,tomato,...]
 
 Keys (arrows / nav block, so they don't clash with MuJoCo viewer shortcuts):
   Delete        cycle mode: DRIVE -> TARGET -> GAME
-  Insert        throw a tomato now
+  Insert        throw a ball now
   Home          cycle gait (slow walk, walk, run, crouch walk, boxing walk, ...)
   DRIVE   Up/Down walk forward/back   Left/Right turn 30 deg   PgUp/PgDn strafe   End squat on/off
   TARGET  arrows move the ghost 25 cm  PgUp/PgDn rotate ghost   End ghost squat on/off
           Enter = go to the ghost
-  GAME    automatic throws every few seconds; the robot predicts and dodges
+  GAME    automatic throws every few seconds; the robot predicts and reacts
+          End = switch objective DODGE <-> HIT (meet the ball with a hand or bat)
 """
 
 import argparse
@@ -39,9 +41,10 @@ MOMENTUM = 0.6  # s a movement key press keeps the robot moving
 
 
 class App:
-    def __init__(self, robot, mode, interval):
-        self.r = Runner(robot)
-        self.game = Game(self.r, auto=False, interval=interval)
+    def __init__(self, robot, mode, interval, objective="dodge", bat=None, balls=None):
+        self.r = Runner(robot, bat=bat)
+        extra = {"balls": tuple(balls)} if balls else {}
+        self.game = Game(self.r, auto=False, interval=interval, objective=objective, **extra)
         self.overlay = Overlay(str(ROBOT_XML))
         self.keys = queue.Queue()
         self.mode = mode.upper()
@@ -80,6 +83,8 @@ class App:
                 self.game.throw()
         elif key == K_HOME:
             self.gait = (self.gait + 1) % len(GAITS)
+        elif self.mode == "GAME" and key == K_END:
+            self.game.objective = "hit" if self.game.objective == "dodge" else "dodge"
         elif self.mode == "DRIVE":
             if key in (K_UP, K_DOWN, K_PGUP, K_PGDN):
                 self.move_local = {K_UP: (1, 0), K_DOWN: (-1, 0), K_PGUP: (0, 1), K_PGDN: (0, -1)}[key]
@@ -191,11 +196,12 @@ class App:
             last = f"{rec.action} -> {rec.actual_body if rec.actual_t else 'in flight'}"
         counts = g.summary()
         left = "Mode\nGait\nRobot\nPlanner\nLast throw\nScore"
-        right = (f"{self.mode}  (Delete: next)\n{gait}  (Home: next)\n"
+        mode = f"{self.mode} / {g.objective.upper()} (End: switch)" if self.mode == "GAME" else self.mode
+        right = (f"{mode}  (Delete: next)\n{gait}  (Home: next)\n"
                  f"{'kinematic' if r.kinematic else 'SONIC physics'}  x={q[0]:+.2f} y={q[1]:+.2f} yaw={np.degrees(root_yaw(q)):+.0f}\n"
                  f"{r.last_plan_ms:.0f} ms/plan\n"
-                 f"{'-' if rec is None else f'{rec.action} -> {rec.outcome if g.state == chr(105) + chr(100) + chr(108) + chr(101) else rec.actual_body}'}\n"
-                 f"{counts}")
+                 f"{last}\n"
+                 f"{counts}  points {g.points()}")
         return left, right
 
 
@@ -204,9 +210,13 @@ def main():
     ap.add_argument("--robot", default="kinematic", choices=["kinematic", "physics"])
     ap.add_argument("--mode", default="drive", choices=["drive", "target", "game"])
     ap.add_argument("--interval", type=float, default=4.0, help="seconds between throws in GAME mode")
+    ap.add_argument("--objective", default="dodge", choices=["dodge", "hit"])
+    ap.add_argument("--bat", default=None, choices=["left", "right", "both"], help="foam bat in hand(s)")
+    ap.add_argument("--balls", default=None, help="comma-separated subset of fruitpunch.balls.BALLS")
     args = ap.parse_args()
     print(__doc__)
-    App(args.robot, args.mode, args.interval).run()
+    App(args.robot, args.mode, args.interval, args.objective, args.bat,
+        args.balls.split(",") if args.balls else None).run()
 
 
 if __name__ == "__main__":

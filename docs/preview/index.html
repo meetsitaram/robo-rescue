@@ -1,0 +1,265 @@
+<title>FruitPunch Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground: #f3f6f9;
+  --surface: #ffffff;
+  --ink: #142233;
+  --muted: #5b6b7e;
+  --line: #d9e1ea;
+  --tomato: #d2402a;
+  --ghost: #1b8db3;
+  --good: #23824f;
+  --warn: #b7791f;
+  --bad: #c0392b;
+  --chip-good: #e3f3ea;
+  --chip-warn: #fbf0dc;
+  --chip-bad: #fbe6e3;
+  --chip-ghost: #e2f2f8;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0f1a26; --surface: #172636; --ink: #e6edf5; --muted: #93a4b8; --line: #263a4f;
+    --tomato: #f0604a; --ghost: #46c3e8; --good: #4cc286; --warn: #e3aa4f; --bad: #f06a5b;
+    --chip-good: #173a2a; --chip-warn: #3a2e17; --chip-bad: #3d1f1c; --chip-ghost: #15384a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0f1a26; --surface: #172636; --ink: #e6edf5; --muted: #93a4b8; --line: #263a4f;
+  --tomato: #f0604a; --ghost: #46c3e8; --good: #4cc286; --warn: #e3aa4f; --bad: #f06a5b;
+  --chip-good: #173a2a; --chip-warn: #3a2e17; --chip-bad: #3d1f1c; --chip-ghost: #15384a;
+}
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 36px; }
+h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: 0.01em; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(34px, 6vw, 48px); }
+h2 { font-size: 26px; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--muted); }
+.mono, td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.label { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 13px; color: var(--muted); font-weight: 600; }
+header { display: grid; gap: 10px; }
+.status { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.chip.good { background: var(--chip-good); color: var(--good); }
+.chip.warn { background: var(--chip-warn); color: var(--warn); }
+.chip.bad { background: var(--chip-bad); color: var(--bad); }
+.chip.ghost { background: var(--chip-ghost); color: var(--ghost); }
+section { display: grid; gap: 14px; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); background: var(--ground); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; }
+.bar { display: inline-block; height: 8px; border-radius: 2px; background: var(--good); vertical-align: middle; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 500 14px var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.tab:hover { border-color: var(--ghost); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.tab:focus-visible, video:focus-visible { outline: 2px solid var(--ghost); outline-offset: 2px; }
+.player { display: grid; gap: 10px; }
+video { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #0f1a26; border-radius: 6px; display: block; }
+.look { display: grid; gap: 6px; padding: 12px 14px; border-left: 3px solid var(--ghost); background: var(--surface); border-radius: 0 6px 6px 0; }
+.look ul { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.checklist label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.checklist input { margin-top: 4px; accent-color: var(--good); }
+code { font-family: var(--mono); font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+@media (max-width: 600px) { th, td { padding: 7px 8px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="label">Unitree G1 · MuJoCo · SONIC kinematic planner</span>
+    <h1>FruitPunch phase 1 review</h1>
+    <p>Balls and tomatoes are thrown at the G1 from close, medium and long range. The robot fits a parabola to the ball in flight, predicts when and where it hits, and checks candidate reactions with the kinematic planner before committing. In DODGE it gets out of the way. In HIT it meets the ball with a hand or a foam bat, using kplanner punches and hooks aimed with arm IK.</p>
+    <div class="status">
+      <span class="chip good">Kinematic dodge: 28 of 28 avoided</span>
+      <span class="chip good">Kinematic hit + bat: 20 of 28 hits</span>
+      <span class="chip warn">SONIC physics: weaker, see scores</span>
+      <span class="chip bad">Not committed: awaiting your review</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="clips-h">
+    <h2 id="clips-h">Clips</h2>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="player">
+      <video id="video" controls muted playsinline preload="metadata"></video>
+      <div class="legend">
+        <span><i class="sw" style="background:#2aa7d6"></i>ghost = target pose, or where the chosen move ends</span>
+        <span><i class="sw" style="background:#f2c418"></i>predicted ball arc</span>
+        <span><i class="sw" style="background:#e5332a"></i>predicted contact point</span>
+        <span><i class="sw" style="background:#ff8c1a"></i>foam bat</span>
+      </div>
+      <div class="look">
+        <span class="label">What to look for</span>
+        <ul id="look"></ul>
+      </div>
+    </div>
+    <div class="scroll"><table id="clip-table"></table></div>
+  </section>
+
+  <section aria-labelledby="score-h">
+    <h2 id="score-h">Scores, 28 throws per run</h2>
+    <p class="muted">Final phase 1 code. Clips above were recorded slightly earlier in development. Seed 0, balls drawn at random from the catalog below, aimed between pelvis and chest. Dodge points: dodge or miss +1, hand or bat hit +2, body hit −1. Hit points: hand or bat hit +2, body hit −1, anything else 0.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Run</th><th class="num">Success</th><th class="num">Body hits</th><th class="num">Points</th><th>Breakdown</th></tr></thead>
+        <tbody>
+          <tr><td>No reaction (baseline)</td><td class="num">0 / 28</td><td class="num">28</td><td class="num">−28</td><td>Throws are on target</td></tr>
+          <tr><td>Kinematic · DODGE</td><td class="num">28 / 28</td><td class="num">0</td><td class="num">31</td><td>21 dodged, 3 swatted, 4 missed anyway</td></tr>
+          <tr><td>Kinematic · HIT, bare hands</td><td class="num">19 / 28</td><td class="num">4</td><td class="num">34</td><td>5 bounced off an arm</td></tr>
+          <tr><td>Kinematic · HIT with bats</td><td class="num">20 / 28</td><td class="num">4</td><td class="num">36</td><td>2 bounced, 2 missed</td></tr>
+          <tr><td>SONIC physics · DODGE</td><td class="num">19 / 28</td><td class="num">8</td><td class="num">14</td><td>11 dodged, 3 swatted, 5 missed anyway, 1 bounced</td></tr>
+          <tr><td>SONIC physics · HIT with bats</td><td class="num">12 / 28</td><td class="num">13</td><td class="num">11</td><td>3 bounced; the robot fell 3 times and was reset</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="balls-h">
+    <h2 id="balls-h">Ball catalog</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Ball</th><th class="num">Diameter</th><th class="num">Mass</th><th class="num">Thrown from</th><th class="num">Flight</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Tennis</td><td class="num">6.6 cm</td><td class="num">58 g</td><td class="num">3–5 m</td><td class="num">0.5–0.8 s</td><td>Close and fast</td></tr>
+          <tr><td>Dodgeball</td><td class="num">21 cm</td><td class="num">300 g</td><td class="num">4–6 m</td><td class="num">0.6–0.9 s</td><td>Close and big</td></tr>
+          <tr><td>Volleyball</td><td class="num">21 cm</td><td class="num">270 g</td><td class="num">6–9 m</td><td class="num">1.1–1.5 s</td><td>Overhead throw, arcing</td></tr>
+          <tr><td>Basketball</td><td class="num">24 cm</td><td class="num">620 g</td><td class="num">6–9 m</td><td class="num">1.1–1.5 s</td><td>Overhead throw, arcing</td></tr>
+          <tr><td>Cannonball</td><td class="num">16 cm</td><td class="num">5 kg</td><td class="num">25–40 m</td><td class="num">2.6–3.4 s</td><td>Mortar arc from far away</td></tr>
+          <tr><td>Tomato, straight</td><td class="num">7 cm</td><td class="num">120 g</td><td class="num">8–10 m</td><td class="num">1.6–2.0 s</td><td>Game-style floater at 8% gravity, nearly flat. Sticks to torso and head</td></tr>
+          <tr><td>Tomato, lob</td><td class="num">7 cm</td><td class="num">120 g</td><td class="num">6–8 m</td><td class="num">1.3–1.6 s</td><td>Real gravity. Sticks to torso and head</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="moves-h">
+    <h2 id="moves-h">Reaction moves</h2>
+    <p class="muted">Every move starts from kplanner motion. Moves marked "layer" add joint offsets on top of the planner's motion.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Objective</th><th>Moves, in the order tried</th></tr></thead>
+        <tbody>
+          <tr><td>DODGE</td><td>Stop · torso twist (layer) · forward lean (layer) · duck at squat 0.3 or 0.2, with optional lean or twist · one-leg kneel · kneel · turn and walk out · crouch-walk out · sidestep · back off · turn. Chest-high and higher throws try ducks before travelling moves; on SONIC, turn-and-walk comes before sidesteps</td></tr>
+          <tr><td>HIT</td><td>Boxing guard facing the ball, then a kplanner left or right punch or hook, timed by delaying the mode switch and aimed at full extension with arm IK (layer). Fallback: an arm-IK swat, then hold the guard</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="next-h">
+    <h2 id="next-h">Improvements queued for later</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Idea</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Keep the robot walking around between and during throws</td><td>A moving target is harder to hit, and the predictor already checks the planned motion</td></tr>
+          <tr><td>Punch timing on SONIC</td><td>Physics HIT lands 12 of 28 and falls 3 times: model per-move lag and re-aim during the punch</td></tr>
+          <tr><td>Fast close throws on SONIC</td><td>Tennis balls and dodgeballs arrive in under 0.9 s; start from a guard or crouched stance</td></tr>
+          <tr><td>Kicks</td><td>No kplanner kick mode exists; needs a leg layer like the arm aim</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="check-h">
+    <h2 id="check-h">Review checklist</h2>
+    <ul class="checklist">
+      <li><label><input type="checkbox" id="c1"> Drive clip: walking, turning, strafing, running, boxing walk and squat look natural</label></li>
+      <li><label><input type="checkbox" id="c2"> Target clips: the robot ends on the cyan ghost, in-place adjustment works, squat at the target works</label></li>
+      <li><label><input type="checkbox" id="c3"> Dodge clips: the arc and contact point appear before the robot reacts, and each move clears the ball</label></li>
+      <li><label><input type="checkbox" id="c4"> Hit clip: the bat or hand meets the ball, and punches look like punches</label></li>
+      <li><label><input type="checkbox" id="c5"> Ball sizes, ranges and trajectories feel right; tomatoes stick, balls bounce</label></li>
+      <li><label><input type="checkbox" id="c6"> OK to commit</label></li>
+    </ul>
+    <p class="muted">Commit status: one earlier local commit <code>92b53af</code> exists (not pushed); everything since is uncommitted.</p>
+  </section>
+</div>
+
+<script>
+const CLIPS = [
+  { id: "dodge_kinematic", label: "Dodge · kinematic", look: [
+      "Mixed balls: basketballs, a tomato, a cannonball from 25-40 m, volleyballs, tennis balls, a dodgeball",
+      "Moves: ducks, a sidestep, a lean, turn-and-walk escapes, and one hand swat on a fast tennis ball",
+      "The caption names the ball, the chosen move and the outcome"] },
+  { id: "hit_kinematic_bat", label: "Hit · kinematic · bat", look: [
+      "Orange foam bats in both hands; the robot waits in a kplanner boxing guard",
+      "Hits come from aimed kplanner punches and arm-IK swats; a reaction of none means the guard was already in the ball's path",
+      "8 of 10 balls meet a hand or bat"] },
+  { id: "dodge_physics", label: "Dodge · SONIC physics", look: [
+      "Same pipeline with the physically balancing robot",
+      "Slower execution: some big or close balls still hit the body"] },
+  { id: "hit_physics_bat", label: "Hit · SONIC physics · bat", look: [
+      "Known weak spot: 1 of 10 hits. Punch timing under SONIC lag is not solved yet"] },
+  { id: "target_kinematic", label: "Target · kinematic", look: [
+      "The cyan ghost is the commanded pose; the green arrow is its heading",
+      "Three targets: a 2.2 m walk, an in-place shift with a 90° turn, and a return to the origin with a squat"] },
+  { id: "target_physics", label: "Target · SONIC physics", look: [
+      "Same targets with the physical robot; expect 5-16 cm of error"] },
+  { id: "drive_kinematic", label: "Drive", look: [
+      "Velocity and direction commands as the keyboard sends them: walk, turn, strafe, run, boxing walk, squat"] },
+];
+let results = {};
+const tabs = document.getElementById("tabs");
+const video = document.getElementById("video");
+const look = document.getElementById("look");
+const table = document.getElementById("clip-table");
+
+const OUTCOME = { dodged: "good", miss: "good", swatted: "ghost", bounced: "warn", splat: "bad", struck: "bad" };
+const esc = s => String(s ?? "–").replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+function renderTable(id) {
+  const r = results[id];
+  if (!r) { table.innerHTML = "<tbody><tr><td class='muted'>No per-throw data for this clip.</td></tr></tbody>"; return; }
+  if (id.startsWith("target")) {
+    table.innerHTML = "<thead><tr><th>Target</th><th class='num'>Position error</th><th class='num'>Heading error</th></tr></thead><tbody>" +
+      r.map(t => `<tr><td>${esc(t.target)}</td><td class="num">${t.pos_err_cm} cm</td><td class="num">${t.yaw_err_deg}°</td></tr>`).join("") + "</tbody>";
+    return;
+  }
+  const [rows, summary, points] = r;
+  table.innerHTML = "<thead><tr><th class='num'>#</th><th>Ball</th><th>First prediction</th><th>Reaction (re-plans)</th><th>First contact</th><th>Outcome</th></tr></thead><tbody>" +
+    rows.map(t => `<tr><td class="num">${t.n}</td><td>${esc(t.ball)}</td><td>${esc(t.first_prediction)}${t.pred_t ? ` <span class="mono muted">@${t.pred_t}s</span>` : ""}</td>` +
+      `<td>${esc((t.action || "").split(" > ").pop())}${t.replans ? ` <span class="muted">(${t.replans})</span>` : ""}</td>` +
+      `<td class="mono">${esc(t.hit)}</td><td><span class="chip ${OUTCOME[t.outcome] || ""}">${esc(t.outcome)}</span></td></tr>`).join("") +
+    `</tbody><tfoot><tr><td></td><td colspan="5" class="muted">Points ${points ?? "–"}</td></tr></tfoot>`;
+}
+
+function select(id) {
+  const clip = CLIPS.find(c => c.id === id) || CLIPS[0];
+  for (const b of tabs.children) b.setAttribute("aria-selected", String(b.dataset.id === clip.id));
+  video.src = `clips/${clip.id}.mp4`;
+  look.innerHTML = clip.look.map(l => `<li>${esc(l)}</li>`).join("");
+  renderTable(clip.id);
+  try { localStorage.setItem("fp-clip", clip.id); } catch (e) {}
+}
+
+for (const c of CLIPS) {
+  const b = document.createElement("button");
+  b.className = "tab"; b.role = "tab"; b.dataset.id = c.id; b.textContent = c.label;
+  b.addEventListener("click", () => select(c.id));
+  tabs.appendChild(b);
+}
+let start = location.hash.slice(1);
+try { start = start || localStorage.getItem("fp-clip"); } catch (e) {}
+select(start);
+fetch("clips/results.json").then(r => r.json()).then(j => { results = j; renderTable(tabs.querySelector("[aria-selected=true]").dataset.id); }).catch(() => {});
+
+document.querySelectorAll(".checklist input").forEach(cb => {
+  try { cb.checked = localStorage.getItem("fp-" + cb.id) === "1"; } catch (e) {}
+  cb.addEventListener("change", () => { try { localStorage.setItem("fp-" + cb.id, cb.checked ? "1" : "0"); } catch (e) {} });
+});
+</script>

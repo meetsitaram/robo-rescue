@@ -44,6 +44,10 @@ ACTION_SCALE = 0.25 * EFFORT / (_arm * _W**2)  # uses 1x stiffness even for doub
 TORQUE_LIMIT = np.array([88, 88, 88, 139, 50, 50] * 2 + [88, 50, 50] + [25, 25, 25, 25, 25, 5, 5] * 2,
                         float)
 
+WAIST_YAW, WAIST_ROLL, WAIST_PITCH = 12, 13, 14  # MuJoCo joint indices
+WAIST_PITCH_MAX = 0.52
+L_HIP_PITCH, R_HIP_PITCH = 0, 6
+
 CONTROL_DT = 0.02    # 50 Hz policy
 SIM_DT = 0.005       # 200 Hz physics
 PLANNER_FPS = 30.0
