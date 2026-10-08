@@ -1,0 +1,27 @@
+<mujoco model="fruitpunch_g1">
+  <!-- FruitPunch arena: G1 29-DoF + a throwable tomato.
+       The tomato sticks (via the tomato_stick weld, activated at runtime) when it
+       touches the torso/head, and bounces off everything else. -->
+  <include file="g1/g1_29dof.xml"/>
+
+  <option timestep="0.005" integrator="implicitfast"/>
+
+  <visual>
+    <global offwidth="1920" offheight="1080"/>
+  </visual>
+
+  <worldbody>
+    <body name="tomato" pos="3 0 -1">
+      <freejoint name="tomato_free"/>
+      <!-- soft, slightly bouncy: dampratio < ~0.3 makes MuJoCo contact stiffness explode (launches the tomato); 0.02 0.5 gives restitution ~0.6 -->
+      <geom name="tomato_geom" type="sphere" size="0.035" mass="0.12" rgba="0.85 0.08 0.05 1"
+            solref="0.02 0.5" friction="1.0 0.01 0.001" condim="4" priority="1"/>
+      <geom name="tomato_stem" type="cylinder" size="0.006 0.006" pos="0 0 0.036"
+            rgba="0.15 0.5 0.1 1" contype="0" conaffinity="0" mass="0.001"/>
+    </body>
+  </worldbody>
+
+  <equality>
+    <weld name="tomato_stick" body1="torso_link" body2="tomato" active="false" solref="0.01 1"/>
+  </equality>
+</mujoco>
