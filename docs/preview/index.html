@@ -113,16 +113,16 @@ code { font-family: var(--mono); font-size: 13px; background: var(--surface); bo
 
   <section aria-labelledby="score-h">
     <h2 id="score-h">Scores, 28 throws per run</h2>
-    <p class="muted">Final phase 1 code. Clips above were recorded slightly earlier in development. Seed 0, balls drawn at random from the catalog below, aimed between pelvis and chest. Dodge points: dodge or miss +1, hand or bat hit +2, body hit −1. Hit points: hand or bat hit +2, body hit −1, anything else 0.</p>
+    <p class="muted">Final phase 1 code. Seed 0, balls drawn at random from the catalog below, aimed between pelvis and chest. Dodge points: dodge or miss +1, hand or bat hit +2, body hit −1. Hit points: hand or bat hit +2, body hit −1, anything else 0.</p>
     <div class="scroll">
       <table>
         <thead><tr><th>Run</th><th class="num">Success</th><th class="num">Body hits</th><th class="num">Points</th><th>Breakdown</th></tr></thead>
         <tbody>
           <tr><td>No reaction (baseline)</td><td class="num">0 / 28</td><td class="num">28</td><td class="num">−28</td><td>Throws are on target</td></tr>
-          <tr><td>Kinematic · DODGE</td><td class="num">28 / 28</td><td class="num">0</td><td class="num">31</td><td>21 dodged, 3 swatted, 4 missed anyway</td></tr>
+          <tr><td>Kinematic · DODGE</td><td class="num">28 / 28</td><td class="num">0</td><td class="num">28</td><td>26 dodged, 2 missed anyway</td></tr>
           <tr><td>Kinematic · HIT, bare hands</td><td class="num">19 / 28</td><td class="num">4</td><td class="num">34</td><td>5 bounced off an arm</td></tr>
           <tr><td>Kinematic · HIT with bats</td><td class="num">20 / 28</td><td class="num">4</td><td class="num">36</td><td>2 bounced, 2 missed</td></tr>
-          <tr><td>SONIC physics · DODGE</td><td class="num">19 / 28</td><td class="num">8</td><td class="num">14</td><td>11 dodged, 3 swatted, 5 missed anyway, 1 bounced</td></tr>
+          <tr><td>SONIC physics · DODGE</td><td class="num">21 / 28</td><td class="num">5</td><td class="num">16</td><td>Fast reactions (shortest planner horizon, 1.3× playback). Was 19 / 28 with 8 body hits</td></tr>
           <tr><td>SONIC physics · HIT with bats</td><td class="num">12 / 28</td><td class="num">13</td><td class="num">11</td><td>3 bounced; the robot fell 3 times and was reset</td></tr>
         </tbody>
       </table>
@@ -193,18 +193,18 @@ code { font-family: var(--mono); font-size: 13px; background: var(--surface); bo
 <script>
 const CLIPS = [
   { id: "dodge_kinematic", label: "Dodge · kinematic", look: [
-      "Mixed balls: basketballs, a tomato, a cannonball from 25-40 m, volleyballs, tennis balls, a dodgeball",
-      "Moves: ducks, a sidestep, a lean, turn-and-walk escapes, and one hand swat on a fast tennis ball",
-      "The caption names the ball, the chosen move and the outcome"] },
+      "Mixed balls from the catalog: tennis, dodgeball, volleyball, basketball, cannonball, tomatoes",
+      "The ghost shows where the chosen move ends; the caption names the ball, the move and the outcome",
+      "Per-throw results are in the table below"] },
   { id: "hit_kinematic_bat", label: "Hit · kinematic · bat", look: [
       "Orange foam bats in both hands; the robot waits in a kplanner boxing guard",
-      "Hits come from aimed kplanner punches and arm-IK swats; a reaction of none means the guard was already in the ball's path",
-      "8 of 10 balls meet a hand or bat"] },
+      "Hits come from aimed kplanner punches and hooks, or the arm-IK swat fallback",
+      "A reaction of none means the guard was already in the ball's path"] },
   { id: "dodge_physics", label: "Dodge · SONIC physics", look: [
-      "Same pipeline with the physically balancing robot",
-      "Slower execution: some big or close balls still hit the body"] },
+      "Same pipeline with the physically balancing robot and fast reactions (shortest planner horizon, 1.3× playback)",
+      "Big balls and cannonballs can still hit the body; a cannonball can knock the robot over"] },
   { id: "hit_physics_bat", label: "Hit · SONIC physics · bat", look: [
-      "Known weak spot: 1 of 10 hits. Punch timing under SONIC lag is not solved yet"] },
+      "Known weak spot: punch timing under SONIC lag is not solved yet"] },
   { id: "target_kinematic", label: "Target · kinematic", look: [
       "The cyan ghost is the commanded pose; the green arrow is its heading",
       "Three targets: a 2.2 m walk, an in-place shift with a 90° turn, and a return to the origin with a squat"] },

@@ -31,6 +31,8 @@ class PlannerCommand:
     target_xy: tuple | None = None    # specific-target mode: world xy goal
     target_yaw: float | None = None   # specific-target mode: world heading at goal
     seed: int = 1234
+    horizon_tokens: int | None = None  # force one plan length (6-16 tokens of 4 frames); None = 6-11
+    speed: float = 1.0                 # play the plan back this much faster (reaction moves)
 
     def key(self):
         return (self.mode, round(self.target_vel, 3), tuple(np.round(self.move_dir, 3)),
@@ -68,7 +70,7 @@ class KPlanner:
             "has_specific_target": np.array([[int(has_target)]], np.int64),
             "specific_target_positions": tp,
             "specific_target_headings": th,
-            "allowed_pred_num_tokens": DEFAULT_ALLOWED_TOKENS,
+            "allowed_pred_num_tokens": allowed_tokens(cmd.horizon_tokens),
             "height": np.array([height], np.float32),
         }
         qpos, num = self.sess.run(None, feed)
@@ -89,9 +91,20 @@ def interp_qpos(frames: np.ndarray, f: float) -> np.ndarray:
     return out
 
 
-def resample_30_to_50(frames30: np.ndarray) -> np.ndarray:
-    n50 = int(np.floor(len(frames30) / g1.PLANNER_FPS * 50))
-    return np.stack([interp_qpos(frames30, k * g1.PLANNER_FPS / 50) for k in range(n50)])
+def allowed_tokens(n=None):
+    """allowed_pred_num_tokens mask: entry i allows a plan of 6 + i tokens."""
+    if n is None:
+        return DEFAULT_ALLOWED_TOKENS
+    mask = np.zeros((1, 11), np.int64)
+    mask[0, int(np.clip(n, 6, 16)) - 6] = 1
+    return mask
+
+
+def resample_30_to_50(frames30: np.ndarray, speed: float = 1.0) -> np.ndarray:
+    """30 Hz plan -> 50 Hz track, optionally played back `speed` times faster."""
+    step = g1.PLANNER_FPS / 50 * speed
+    n50 = int(np.floor((len(frames30) - 1) / step)) + 1
+    return np.stack([interp_qpos(frames30, k * step) for k in range(n50)])
 
 
 class MotionTrack:
@@ -130,8 +143,8 @@ class MotionTrack:
     def advance(self):
         self.cur = min(self.cur + 1, len(self.frames) - 1)
 
-    def merge(self, plan30: np.ndarray, gen: int):
-        new = resample_30_to_50(plan30)
+    def merge(self, plan30: np.ndarray, gen: int, speed: float = 1.0):
+        new = resample_30_to_50(plan30, speed)
         if self.fresh:
             self.frames, self.cur, self.fresh = new, 0, False
             return

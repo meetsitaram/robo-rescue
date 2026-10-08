@@ -112,7 +112,7 @@ class Runner:
         if self.replan.should_replan(self.cmd, self.track, g1.CONTROL_DT):
             first = self.track.fresh
             plan, gen = self.plan_now(self.cmd)
-            self.track.merge(plan, gen)
+            self.track.merge(plan, gen, speed=self.cmd.speed)
             if first and self.policy:
                 self.policy.align_heading(self.arena.d.qpos[3:7].copy(), self.track.frames[0, 3:7])
         if self.kinematic:

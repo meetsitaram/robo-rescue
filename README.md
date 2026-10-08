@@ -13,9 +13,9 @@ SONIC whole-body policy.
 
 | Crouch dodge (kinematic) | Crouch dodge (SONIC physics) |
 | --- | --- |
-| ![Kinematic G1 squats under a basketball](docs/media/duck_kinematic.gif) | ![SONIC G1 squats under a volleyball](docs/media/duck_sonic.gif) |
+| ![Kinematic G1 squats under a volleyball](docs/media/duck_kinematic.gif) | ![SONIC G1 squats under a tomato](docs/media/duck_sonic.gif) |
 | **Hit with a bare hand: aimed kplanner punch** | **Hit with a foam bat: aimed kplanner punch** |
-| ![G1 punches a dodgeball away](docs/media/punch_hand.gif) | ![G1 with foam bats hits a tomato](docs/media/punch_bat.gif) |
+| ![G1 punches a dodgeball away](docs/media/punch_hand.gif) | ![G1 with foam bats punches a basketball away](docs/media/punch_bat.gif) |
 
 | Cannonball, reactions off (SONIC physics) |
 | --- |
@@ -93,14 +93,17 @@ met by a hand or bat (HIT).
 | Run | Success | Body hits | Other |
 | --- | --- | --- | --- |
 | No reaction (baseline) | 0 / 28 | 28 | |
-| Kinematic · DODGE | 28 / 28 | 0 | 21 dodged, 3 swatted, 4 missed anyway |
+| Kinematic · DODGE | 28 / 28 | 0 | 26 dodged, 2 missed anyway |
 | Kinematic · HIT, bare hands | 19 / 28 | 4 | 5 bounced off an arm |
 | Kinematic · HIT, foam bats | 20 / 28 | 4 | 2 bounced, 2 missed |
-| SONIC physics · DODGE | 19 / 28 | 8 | 11 dodged, 3 swatted, 5 missed anyway, 1 bounced |
+| SONIC physics · DODGE | 21 / 28 | 5 | 12 dodged, 9 missed anyway, 2 bounced; seed 1: 20 / 28 |
 | SONIC physics · HIT, foam bats | 12 / 28 | 13 | 3 bounced; the robot fell 3 times and was reset |
 
-SONIC is weaker because it executes moves more slowly than planned, which matters most for close
-tennis and dodgeball throws (under 0.9 s of flight). Physics scores also vary from run to run
+Dodge reactions use the planner's shortest horizon (0.8 s) and 1.3× playback, so the robot reaches
+its dodge pose sooner. On SONIC this cut the time for a duck from 0.94 s to 0.40 s and raised DODGE
+from 19 to 20–21 avoided, with body hits down from 8 to 5–6. SONIC still trails its reference,
+which matters most for big balls and close throws. The physics falls in these runs all came from
+cannonball hits. Physics scores also vary from run to run
 because multithreaded ONNX inference is not bit-exact.
 
 ## Setup
@@ -159,7 +162,7 @@ they are read from `../gear-sonic-g1/`; override this with `FRUITPUNCH_SONIC_DIR
 ## Next
 
 - Keep the robot walking around between and during throws.
-- Faster SONIC reactions for close throws; punch timing on SONIC.
+- Punch timing on SONIC (HIT lands 12 of 28 on the physical robot).
 - Kicks (the planner has no kick mode, so a leg layer like the arm aim is needed).
 - AgiBot X2, then a browser or mobile build.
 

@@ -96,6 +96,7 @@ class Arena:
         self.torso_id = m.body("torso_link").id
         self.stuck = False
         self.sticky = True
+        self.proj_rgba = self.m.geom_rgba[self.tomato_geom].copy()
         self.first_hit = None  # (time, body name, world point)
         self.park_tomato()
 
@@ -139,8 +140,16 @@ class Arena:
         self.stuck = False
         self.first_hit = None
         self.launched = False
-        self.d.qpos[self.tq:self.tq + 7] = (0, 6, 0.036, 1, 0, 0, 0)  # resting off to the side
+        # Out of sight between throws: far away and invisible (it used to rest 6 m to the side,
+        # which showed up in close camera shots as a ball appearing out of nowhere).
+        self.d.qpos[self.tq:self.tq + 7] = (50, 50, 0.2, 1, 0, 0, 0)
         self.d.qvel[self.tv:self.tv + 6] = 0
+        self._show_projectile(False)
+
+    def _show_projectile(self, visible):
+        stem = self.m.geom("tomato_stem").id
+        self.m.geom_rgba[self.tomato_geom, 3] = self.proj_rgba[3] if visible else 0.0
+        self.m.geom_rgba[stem, 3] = 1.0 if (visible and self.sticky) else 0.0
 
     def launch(self, p0, v0):
         self.park_tomato()
@@ -148,6 +157,7 @@ class Arena:
         self.d.qpos[self.tq:self.tq + 3] = p0
         self.d.qvel[self.tv:self.tv + 3] = v0
         self.d.qvel[self.tv + 3:self.tv + 6] = np.random.uniform(-5, 5, 3)  # a bit of spin
+        self._show_projectile(True)
         mujoco.mj_forward(self.m, self.d)
 
     def set_projectile(self, radius, mass, rgba, sticky):
@@ -156,6 +166,7 @@ class Arena:
         m.geom_size[self.tomato_geom, 0] = radius
         m.geom_rbound[self.tomato_geom] = radius
         m.geom_rgba[self.tomato_geom] = rgba
+        self.proj_rgba = np.array(rgba, float)
         stem = m.geom("tomato_stem").id
         m.geom_rgba[stem, 3] = 1.0 if sticky else 0.0  # the stem only on fruit
         m.geom_pos[stem, 2] = radius + 0.001

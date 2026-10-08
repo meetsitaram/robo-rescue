@@ -31,7 +31,7 @@ except OSError:
 
 
 class Camera:
-    def __init__(self, runner, distance=5.0, azimuth=115, elevation=-12):
+    def __init__(self, runner, distance=2.6, azimuth=115, elevation=-8):
         self.r = runner
         self.ov = Overlay(str(ROBOT_XML))
         self.ren = mujoco.Renderer(runner.arena.m, H, W)
@@ -39,13 +39,21 @@ class Camera:
         self.cam.distance, self.cam.azimuth, self.cam.elevation = distance, azimuth, elevation
         self.lookat = None
 
-    def frame(self, title, sub, offset=(0.9, 0.0)):
+    def frame(self, title, sub, offset=(0.6, 0.0)):
         q = self.r.robot_qpos()
         want = np.array([q[0] + offset[0], q[1] + offset[1], 0.95])
         self.lookat = want if self.lookat is None else 0.9 * self.lookat + 0.1 * want  # smooth follow
         self.cam.lookat[:] = self.lookat
         self.ren.update_scene(self.r.arena.d, self.cam)
+        path = self.ov.path
+        if path is not None:
+            # Up close, the stretch of the arc passing next to the camera renders as a thick bar.
+            az, el = np.radians(self.cam.azimuth), np.radians(self.cam.elevation)
+            fwd = np.array([np.cos(el) * np.cos(az), np.cos(el) * np.sin(az), np.sin(el)])
+            cam_pos = self.lookat - self.cam.distance * fwd
+            self.ov.path = path[np.linalg.norm(path - cam_pos, axis=1) > 1.2]
         self.ov.draw(self.ren.scene, clear=False)
+        self.ov.path = path
         img = Image.fromarray(self.ren.render())
         d = ImageDraw.Draw(img, "RGBA")
         d.rectangle([0, H - 70, W, H], fill=(0, 0, 0, 150))
@@ -119,7 +127,7 @@ def game_shot(name, robot, objective, match, balls, seed=0, bat=None, react=True
 def target_shot(name, robot, xy=(2.0, 1.0), yaw=np.pi / 2, seconds=8.0):
     """kplanner specific-target mode: walk to a ghost pose."""
     r = Runner(robot)
-    cam = Camera(r, distance=5.5, azimuth=140, elevation=-16)
+    cam = Camera(r, distance=3.0, azimuth=140, elevation=-12)
     for _ in range(50):
         r.tick()
     cam.ov.ghost_qpos = standing_qpos(xy, yaw)

@@ -75,6 +75,10 @@ class Candidate:
 LEAN = {"root_pitch": 0.45, g1.L_HIP_PITCH: -0.45, g1.R_HIP_PITCH: -0.45}
 HAND_BODIES = {"left_wrist_roll_link", "left_wrist_pitch_link", "left_wrist_yaw_link",
                "right_wrist_roll_link", "right_wrist_pitch_link", "right_wrist_yaw_link"}
+# Reaction moves use the planner's shortest horizon (6 tokens = 0.8 s), which reaches the
+# target pose much sooner, played back 1.3x faster. SONIC squat duck: pelvis below 0.6 m in
+# 0.40 s instead of 0.94 s; escape walk covers 0.27 m in 0.6 s instead of 0.09 m.
+REACT_TOKENS, REACT_SPEED = 6, 1.3
 SONIC_LAG = 0.12  # s the physics robot trails its reference; held at its current pose when predicting
 
 
@@ -124,7 +128,14 @@ def dodge_candidates(q, threat_dir_xy, contact_z=None, turn_walk_first=False, ba
     for s in (1, -1):
         c.append(Candidate(f"turn {'left' if s > 0 else 'right'}",
                            PlannerCommand(mode=0, facing_yaw=yaw + s * 1.4)))
+    for cand in c:
+        cand.cmd = fast(cand.cmd)
     return c
+
+
+def fast(cmd: PlannerCommand) -> PlannerCommand:
+    """Reaction timing: shortest planner horizon, faster playback."""
+    return replace(cmd, horizon_tokens=REACT_TOKENS, speed=REACT_SPEED)
 
 
 @dataclass
@@ -294,7 +305,7 @@ class Game:
         plan30, gen = r.plan_now(cand.cmd)
         # Evaluate exactly what would be executed: the plan blended into the live track.
         trial = copy.deepcopy(r.track)
-        trial.merge(plan30, gen)
+        trial.merge(plan30, gen, speed=cand.cmd.speed)
         if cand.overlay:
             apply_overlay(trial, cand.overlay, **(cand.overlay_timing or {}))
         hit, _ = self.predictor.predict(q, p, v, robot_traj=self._robot_traj(trial),
@@ -306,7 +317,7 @@ class Game:
         blended plan clears. If none clears, try swatting the tomato with a hand."""
         r = self.runner
         d = v[:2] / (np.linalg.norm(v[:2]) + 1e-9)
-        stop = Candidate("stop", PlannerCommand(mode=0, facing_yaw=root_yaw(q)))
+        stop = Candidate("stop", fast(PlannerCommand(mode=0, facing_yaw=root_yaw(q))))
         z = None if self.contact is None else float(self.contact[2])
         best = None
         for cand in [stop] + dodge_candidates(q, d, contact_z=z, turn_walk_first=not r.kinematic):
