@@ -171,5 +171,16 @@ they are read from `../gear-sonic-g1/`; override this with `RESCUE_SONIC_DIR`.
 - Kicks (the planner has no kick mode, so a leg layer like the arm aim is needed).
 - AgiBot X2, then a browser or mobile build.
 
-The robot model in `assets/g1` comes from NVIDIA GR00T-WholeBodyControl (Apache-2.0); the meshes
-are Unitree's.
+## License and credits
+
+The code is licensed under the [Apache License 2.0](LICENSE); see [NOTICE](NOTICE).
+
+- **Unitree G1 model** (`assets/g1`): from NVIDIA GR00T-WholeBodyControl (Apache-2.0), originally
+  Unitree Robotics' unitree_ros, BSD 3-Clause ([`assets/g1/LICENSE`](assets/g1/LICENSE)).
+- **GEAR-SONIC planner and policy**: not included. Download them from
+  [`nvidia/GEAR-SONIC`](https://huggingface.co/nvidia/GEAR-SONIC); NVIDIA Open Model License.
+- **Motion data**: none is included. Every motion is generated at runtime by the SONIC planner.
+  Related work that uses BONES-SEED clips (Motion Data by [Bones Studio](https://bones.studio/),
+  under the [BONES-SEED license](https://bones.studio/info/seed-license)) credits them where used.
+
+Details for every third-party piece are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -1,0 +1,13 @@
+Rescue
+Copyright 2026 Sitarama Chekuri
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes the Unitree G1 robot description (assets/g1/), Copyright (c) 2016-2022
+HangZhou YuShu TECHNOLOGY CO.,LTD. ("Unitree Robotics"), BSD 3-Clause License (assets/g1/LICENSE),
+as redistributed in NVIDIA GR00T-WholeBodyControl (Apache License 2.0).
+
+It runs NVIDIA GEAR-SONIC models, which are not included: licensed by NVIDIA Corporation under the
+NVIDIA Open Model License (https://huggingface.co/nvidia/GEAR-SONIC).
+
+See THIRD_PARTY_NOTICES.md for details.
