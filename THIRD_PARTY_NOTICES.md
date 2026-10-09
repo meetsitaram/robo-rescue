@@ -17,6 +17,15 @@ Robotics' [unitree_ros](https://github.com/unitreerobotics/unitree_ros), BSD 3-C
 
 The full BSD 3-Clause text is in [`assets/g1/LICENSE`](assets/g1/LICENSE).
 
+### Trailer: `docs/media/rescue_trailer.mp4`, `docs/media/trailer_finale.gif`
+
+- X2 motions retargeted from the BONES-SEED dataset: Motion Data by Bones Studio,
+  <https://bones.studio/>; subject to the
+  [BONES-SEED Dataset License Agreement](https://bones.studio/info/seed-license).
+- Music: "Transformers Uprising" by LumineWave (Pixabay Content License). It is included only as
+  part of the trailer, not on its own.
+- Backgrounds and some shots were generated with xAI Grok Imagine.
+
 ## Used but not included
 
 ### NVIDIA GEAR-SONIC models

@@ -6,6 +6,29 @@ them. The player is a rescuer who unlocks the facility's main gates so the robot
 gets as many of them out as possible by improving their models, so they see what is coming and dodge
 or deflect it. (Formerly FruitPunch.)
 
+![Finale of the Rescue trailer: hundreds of G1 and X2 robots, three shells, MuJoCo physics](docs/media/trailer_finale.gif)
+
+**[Watch the trailer](docs/media/rescue_trailer.mp4)** (78 s, 720p). X2 motions in the trailer are
+retargeted from the BONES-SEED dataset: Motion Data by [Bones Studio](https://bones.studio/).
+
+## Try it
+
+Windows, Python 3.12, PowerShell:
+
+```powershell
+git clone https://github.com/meetsitaram/robo-rescue
+cd robo-rescue
+py -3.12 -m pip install -r requirements.txt huggingface_hub
+
+# NVIDIA GEAR-SONIC models (~860 MB) into ..\gear-sonic-g1, where the game looks by default
+py -3.12 -c "from huggingface_hub import hf_hub_download as d; [d('nvidia/GEAR-SONIC', f, local_dir='../gear-sonic-g1') for f in ('planner_sonic.onnx', 'model_encoder.onnx', 'model_decoder.onnx')]"
+
+.un.ps1 -m rescue.app --mode game
+```
+
+In the viewer, the robot dodges what is thrown at it. More modes (keyboard driving, ghost target
+pose, hitting back with bats) are under [Run](#run).
+
 Phase 1, below, is the robot's survival pipeline in MuJoCo for the Unitree G1:
 
 1. Track the ball in flight.
