@@ -23,7 +23,7 @@ py -3.12 -m pip install -r requirements.txt huggingface_hub
 # NVIDIA GEAR-SONIC models (~860 MB) into ..\gear-sonic-g1, where the game looks by default
 py -3.12 -c "from huggingface_hub import hf_hub_download as d; [d('nvidia/GEAR-SONIC', f, local_dir='../gear-sonic-g1') for f in ('planner_sonic.onnx', 'model_encoder.onnx', 'model_decoder.onnx')]"
 
-.un.ps1 -m rescue.app --mode game
+.\run.ps1 -m rescue.app --mode game
 ```
 
 In the viewer, the robot dodges what is thrown at it. More modes (keyboard driving, ghost target
